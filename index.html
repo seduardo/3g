@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+	<head>
+		<title>.:: Teste ::.</title>
+		<style>
+			html, body {
+				margin: 0;
+				overflow: hidden;
+				height: 100%;
+			}
+			#toolbar {
+				height: 25px;
+			}
+			#content {
+				position: absolute;
+				top: 26px;
+				right: 0;
+				bottom: 0;
+				left: 0;
+				background-color: black;
+			}
+		</style>
+		<script type="text/javascript" src="js/three.js"></script>
+		<script type="text/javascript" src="js/3g.js"></script>
+	</head>
+	<body>
+		<div id="toolbar">
+			<button>Barras</button><button>Linhas</button><button>Areas</button>
+		</div>
+		<div id="content">
+		</div>
+		<script>
+			var barras = false, linhas = false, areas = false;
+			
+			function desenhaBarras() {
+				if (! barras) {
+				}
+				barras.render();
+			}
+			
+			function desenheLinhas() {
+				if (! linhas) {
+				}
+				linhas.render();
+			}
+			
+			function desenheAreas() {
+				if (areas) {
+				}
+				areas.render();
+			}
+		</script>
+	</body>
+</html>
