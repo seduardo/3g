@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+	<head>
+		<title>.:: Teste ::.</title>
+		<style>
+			html, body {
+				margin: 0;
+				overflow: hidden;
+				height: 100%;
+			}
+			#content {
+				width:100%;
+				height:100%;
+				background: #0e0e0e; /* Old browsers */
+				background: -moz-linear-gradient(top,  #0e0e0e 0%, #7d7e7d 100%); /* FF3.6+ */
+				background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#0e0e0e), color-stop(100%,#7d7e7d)); /* Chrome,Safari4+ */
+				background: -webkit-linear-gradient(top,  #0e0e0e 0%,#7d7e7d 100%); /* Chrome10+,Safari5.1+ */
+				background: -o-linear-gradient(top,  #0e0e0e 0%,#7d7e7d 100%); /* Opera 11.10+ */
+				background: -ms-linear-gradient(top,  #0e0e0e 0%,#7d7e7d 100%); /* IE10+ */
+				background: linear-gradient(to bottom,  #0e0e0e 0%,#7d7e7d 100%); /* W3C */
+				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0e0e0e', endColorstr='#7d7e7d',GradientType=0 ); /* IE6-9 */
+			}
+		</style>
+		<script type="text/javascript" src="js/three.js"></script>
+	</head>
+	<body>
+		<div id="content">
+		</div>
+		<script>
+			var content = document.getElementById("content");
+			var width = content.offsetWidth, height = content.offsetHeight;
+			var camera = new THREE.PerspectiveCamera(50, width / height, 1, 5000);
+			var cena = new THREE.Scene();
+			var controle = new THREE.Object3D();
+			var dd = 80, sp=dd/4, dx = dd + sp;
+			var ux = 20, uy = 8, uz = 10;
+			var xc = -(ux * dd) / 2, zc = -(uz * dd) / 2;
+			
+			camera.position.set(1600, 800, 1600);
+			camera.rotation.set(-0.47, 0.73, 0.33);
+
+			// Adiciona barra3d
+			function addCube(x, z, h, c) {
+				var geometry = new THREE.CubeGeometry(dd, h*dd, dd);
+				var material = new THREE.MeshPhongMaterial({color: c, reflectivity:5});
+				var cube = new THREE.Mesh(geometry, material);
+				cube.position.set(xc + (x*dx), (h*dd) / 2,zc + (z * dx));
+				controle.add(cube);
+			}
+			
+			// Adiciona controle ao cenario
+			cena.add(controle);
+			var cor = new THREE.Color(0);
+			
+			// Adiciona base
+			var bg = new THREE.PlaneGeometry( dx*ux, dx*uz );
+			bg.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
+			var base = new THREE.Mesh( bg, new THREE.MeshBasicMaterial( { color: 0x555555 } ) );
+			base.position.x += dx*1.5;
+			base.position.z += dx / 2;
+			controle.add(base);
+			
+			bg = new THREE.PlaneGeometry( dx*ux, dx*uz );
+			bg.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
+			base = new THREE.Mesh( bg, new THREE.MeshBasicMaterial( { color: 0x222222 } ) );
+			base.position.x += dx*1.5;
+			base.position.z += dx / 2;
+			base.position.y -= dx;
+			controle.add(base);
+			
+			var fd = new THREE.PlaneGeometry( dx*ux, dx*uy );
+			var fundo = new THREE.Mesh( fd, new THREE.MeshBasicMaterial( { color: 0x666666 } ) );
+			fundo.position.set(dx*1.5,dx*uy/2,-dx*uz/2+dx/2);
+			controle.add(fundo);
+			
+			var lt = new THREE.PlaneGeometry( dx*uz, dx*uy );
+			lt.applyMatrix( new THREE.Matrix4().makeRotationY( Math.PI / 2 ) );
+			var lateral = new THREE.Mesh( lt, new THREE.MeshBasicMaterial( { color: 0x444444 } ) );
+			lateral.position.set(-(dx*ux)/2+dx*1.5,dx*uy/2,dx/2);
+			controle.add(lateral);
+			
+			// Adiciona barras
+			for(var i=0; i < uz; i++) {
+				cor.setHSL(i/10.0, 0.3, 0.3);
+				for(var j=0; j < ux; j++) {
+					addCube(j, i, Math.random() * uy, cor.getStyle());
+				}
+			}
+			
+			var luz = new THREE.DirectionalLight({color:16777215});
+			luz.name = "luz";
+			luz.position.set(150,100,200);
+			
+			cena.add(luz);
+			
+			renderer = new THREE.WebGLRenderer( { antialias: true } );
+			//renderer = new THREE.CanvasRenderer( { antialias: true } );
+
+			content.appendChild( renderer.domElement );
+			
+			render();
+			
+			window.addEventListener("resize", function() {
+				width = content.offsetWidth;
+				height = content.offsetHeight;
+				camera.aspect = width / height;
+				camera.updateProjectionMatrix();
+				renderer.setSize(width, height);
+			}, false);
+			
+			function render() {
+				renderer.setSize( width, height );
+				renderer.render(cena, camera); 
+			}
+			
+			var stopping = false;
+			
+			function animate() {
+				if (! stopping) {
+					requestAnimationFrame( animate );
+				}
+				controle.rotation.y += 0.0025;
+				render();
+			}
+			animate();
+		</script>
+	</body>
+</html>
