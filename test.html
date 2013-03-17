@@ -22,6 +22,7 @@
 			}
 		</style>
 		<script type="text/javascript" src="js/three.js"></script>
+		<script type="text/javascript" src="js/fonts/helvetiker_regular.typeface.js"></script>
 	</head>
 	<body>
 		<div id="content">
@@ -35,6 +36,10 @@
 			var dd = 80, sp=dd/4, dx = dd + sp;
 			var ux = 20, uy = 8, uz = 10;
 			var xc = -(ux * dd) / 2, zc = -(uz * dd) / 2;
+			var targetRotation = 0;
+			var targetRotationOnMouseDown = 0;
+			var windowHalfX = width / 2;
+			var windowHalfY = height / 2;
 			
 			camera.position.set(1600, 800, 1600);
 			camera.rotation.set(-0.47, 0.73, 0.33);
@@ -47,6 +52,42 @@
 				cube.position.set(xc + (x*dx), (h*dd) / 2,zc + (z * dx));
 				controle.add(cube);
 			}
+			
+			// Adiciona titulo
+			var titulo = new THREE.TextGeometry("Max Transaction Time Taken", {
+				size: 80,
+				height: 20,
+				curveSegments: 2,
+				font:"helvetiker"
+			});
+			var lmaterial = THREE.MeshFaceMaterial( [ 
+					new THREE.MeshPhongMaterial( { color: 0x0000ff, shading: THREE.FlatShading } ), // front
+					new THREE.MeshPhongMaterial( { color: 0x0000ff, shading: THREE.SmoothShading } ) // side
+				]);
+			titulo.computeBoundingBox();
+			var centerOffset = -0.5 * (titulo.boundingBox.max.x - titulo.boundingBox.min.x);
+			var texto = new THREE.Mesh(titulo, lmaterial);
+			texto.position.x = centerOffset;
+			texto.position.y = dx * (uy+1);
+			texto.rotation.y += THREE.Math.degToRad(45);;
+			cena.add(texto);
+			
+			// Adiciona titulo
+			var legendaY = new THREE.TextGeometry("Transactions Time(secs)", {
+				size: 80,
+				height: 20,
+				curveSegments: 2,
+				font:"helvetiker"
+			});
+			legendaY.computeBoundingBox();
+			var wOffset = 0.5 * (legendaY.boundingBox.max.x - titulo.boundingBox.min.x);
+			var hOffset = 0.5 * (legendaY.boundingBox.max.y - titulo.boundingBox.min.y);
+			var legenda = new THREE.Mesh(legendaY, lmaterial);
+			legenda.position.x = -(dx * (ux+15)) - hOffset*5;
+			legenda.position.y = dx * uy / 4 - wOffset;
+			legenda.rotation.y = THREE.Math.degToRad(90);
+			legenda.rotation.z = THREE.Math.degToRad(83);
+			cena.add(legenda);
 			
 			// Adiciona controle ao cenario
 			cena.add(controle);
@@ -103,10 +144,17 @@
 			window.addEventListener("resize", function() {
 				width = content.offsetWidth;
 				height = content.offsetHeight;
+				windowHalfX = width / 2;
+				windowHalfY = height / 2;
 				camera.aspect = width / height;
 				camera.updateProjectionMatrix();
 				renderer.setSize(width, height);
 			}, false);
+			
+
+			document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+			document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+			document.addEventListener( 'touchmove', onDocumentTouchMove, false );
 			
 			function render() {
 				renderer.setSize( width, height );
@@ -115,11 +163,75 @@
 			
 			var stopping = false;
 			
+			function onDocumentMouseDown( event ) {
+
+				event.preventDefault();
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+				document.addEventListener( 'mouseout', onDocumentMouseOut, false );
+
+				mouseXOnMouseDown = event.clientX - windowHalfX;
+				targetRotationOnMouseDown = targetRotation;
+
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				mouseX = event.clientX - windowHalfX;
+
+				targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.02;
+
+			}
+
+			function onDocumentMouseUp( event ) {
+
+				document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+				document.removeEventListener( 'mouseout', onDocumentMouseOut, false );
+
+			}
+
+			function onDocumentMouseOut( event ) {
+
+				document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.removeEventListener( 'mouseup', onDocumentMouseUp, false );
+				document.removeEventListener( 'mouseout', onDocumentMouseOut, false );
+
+			}
+
+			function onDocumentTouchStart( event ) {
+
+				if ( event.touches.length === 1 ) {
+
+					event.preventDefault();
+
+					mouseXOnMouseDown = event.touches[ 0 ].pageX - windowHalfX;
+					targetRotationOnMouseDown = targetRotation;
+
+				}
+
+			}
+
+			function onDocumentTouchMove( event ) {
+
+				if ( event.touches.length === 1 ) {
+
+					event.preventDefault();
+
+					mouseX = event.touches[ 0 ].pageX - windowHalfX;
+					targetRotation = targetRotationOnMouseDown + ( mouseX - mouseXOnMouseDown ) * 0.05;
+
+				}
+
+			}
+
 			function animate() {
 				if (! stopping) {
 					requestAnimationFrame( animate );
 				}
-				controle.rotation.y += 0.0025;
+				controle.rotation.y += ( targetRotation - controle.rotation.y ) * 0.05;
+				// controle.rotation.y += 0.0025;
 				render();
 			}
 			animate();
